@@ -16,13 +16,13 @@ function StatBox({ icon, label, value, color }) {
     }}>
       <div style={{ color: color, display: 'flex', alignItems: 'center', gap: '6px' }}>
         {icon}
-        <span style={{ fontFamily: 'var(--font-display)', fontSize: '0.7rem', fontWeight: 600, letterSpacing: '0.1em', color: 'var(--text-muted)', textTransform: 'uppercase' }}>
+        <span style={{ fontFamily: 'var(--font-display)', fontSize: '1rem', fontWeight: 600, letterSpacing: '0.1em', color: 'var(--text-muted)', textTransform: 'uppercase' }}>
           {label}
         </span>
       </div>
       <div style={{
         fontFamily: 'var(--font-display)',
-        fontSize: '1.8rem',
+        fontSize: '2.2rem',
         fontWeight: 700,
         color: color,
         lineHeight: 1
@@ -56,7 +56,7 @@ export default function ContribStats({ sessionCount, totalCount, gestureBreakdow
             {gestureBreakdown.map(({ gesture, count }) => (
               <div key={gesture} style={{
                 fontFamily: 'var(--font-body)',
-                fontSize: '0.85rem',
+                fontSize: '1rem',
                 padding: '3px 10px',
                 background: 'var(--bg-secondary)',
                 border: '1px solid var(--border)',

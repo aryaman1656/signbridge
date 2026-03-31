@@ -26,7 +26,7 @@ export default function SerialConnect({ connected, error, portInfo, onConnect, o
         }} />
         <span style={{
           fontFamily: 'var(--font-display)',
-          fontSize: '0.9rem',
+          fontSize: '1rem',
           fontWeight: 600,
           letterSpacing: '0.08em',
           color: connected ? 'var(--neon-green)' : error ? 'var(--neon-orange)' : 'var(--text-muted)',
@@ -39,7 +39,7 @@ export default function SerialConnect({ connected, error, portInfo, onConnect, o
       {portInfo && (
         <span style={{
           fontFamily: 'var(--font-mono)',
-          fontSize: '0.8rem',
+          fontSize: '0.95rem',
           color: 'var(--text-secondary)',
           background: 'var(--bg-secondary)',
           padding: '3px 10px',
@@ -58,7 +58,7 @@ export default function SerialConnect({ connected, error, portInfo, onConnect, o
       {error && (
         <span style={{
           fontFamily: 'var(--font-body)',
-          fontSize: '0.85rem',
+          fontSize: '1rem',
           color: 'var(--neon-orange)',
           display: 'flex',
           alignItems: 'center',
@@ -71,7 +71,7 @@ export default function SerialConnect({ connected, error, portInfo, onConnect, o
 
       <div style={{ marginLeft: 'auto' }}>
         {!isSupported ? (
-          <span style={{ fontFamily: 'var(--font-body)', fontSize: '0.85rem', color: 'var(--neon-orange)' }}>
+          <span style={{ fontFamily: 'var(--font-body)', fontSize: '1rem', color: 'var(--neon-orange)' }}>
             ⚠ Use Chrome or Edge for Web Serial support
           </span>
         ) : connected ? (

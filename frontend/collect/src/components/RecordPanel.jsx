@@ -75,7 +75,7 @@ export default function RecordPanel({ connected, isLive, onStartCapture, onStopC
             border: '1px solid var(--border)',
             color: 'var(--text-primary)',
             fontFamily: 'var(--font-body)',
-            fontSize: '0.95rem',
+            fontSize: '1.05rem',
             padding: '10px 14px',
             borderRadius: '4px',
             flex: 1,
@@ -101,7 +101,7 @@ export default function RecordPanel({ connected, isLive, onStartCapture, onStopC
               border: '1.5px solid var(--neon-cyan)',
               color: 'var(--text-primary)',
               fontFamily: 'var(--font-body)',
-              fontSize: '0.95rem',
+              fontSize: '1.05rem',
               padding: '10px 14px',
               borderRadius: '4px',
               flex: 1,
@@ -121,7 +121,7 @@ export default function RecordPanel({ connected, isLive, onStartCapture, onStopC
         marginBottom: '20px'
       }}>
         {phase === 'idle' && (
-          <span style={{ fontFamily: 'var(--font-body)', fontSize: '0.95rem', color: 'var(--text-muted)' }}>
+          <span style={{ fontFamily: 'var(--font-body)', fontSize: '1.05rem', color: 'var(--text-muted)' }}>
             {!connected  ? '⚠  Connect ESP32 first' :
              !isLive     ? '⚠  Waiting for sensor data…' :
              !gestureName? 'Select a gesture to begin' :
@@ -133,14 +133,14 @@ export default function RecordPanel({ connected, isLive, onStartCapture, onStopC
           <div style={{ textAlign: 'center' }}>
             <div style={{
               fontFamily: 'var(--font-display)',
-              fontSize: '3rem',
+              fontSize: '3.5rem',
               fontWeight: 700,
               color: 'var(--neon-yellow)',
               lineHeight: 1
             }}>
               {countdown}
             </div>
-            <div style={{ fontFamily: 'var(--font-body)', fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+            <div style={{ fontFamily: 'var(--font-body)', fontSize: '1rem', color: 'var(--text-muted)', marginTop: '4px' }}>
               Get ready…
             </div>
           </div>
@@ -150,7 +150,7 @@ export default function RecordPanel({ connected, isLive, onStartCapture, onStopC
           <div style={{ textAlign: 'center', width: '100%' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '10px' }}>
               <CircleDot size={16} color="var(--neon-orange)" style={{ animation: 'blink 0.6s infinite' }} />
-              <span style={{ fontFamily: 'var(--font-display)', fontSize: '0.9rem', fontWeight: 700, color: 'var(--neon-orange)', letterSpacing: '0.08em' }}>
+              <span style={{ fontFamily: 'var(--font-display)', fontSize: '1.05rem', fontWeight: 700, color: 'var(--neon-orange)', letterSpacing: '0.08em' }}>
                 Recording — {gestureName}
               </span>
             </div>
@@ -196,14 +196,14 @@ export default function RecordPanel({ connected, isLive, onStartCapture, onStopC
         </button>
 
         {gestureName && phase === 'idle' && (
-          <span style={{ fontFamily: 'var(--font-body)', fontSize: '0.85rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <span style={{ fontFamily: 'var(--font-body)', fontSize: '1rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
             <Clock size={13} /> {RECORD_DURATION / 1000}s capture
           </span>
         )}
       </div>
 
       {lastSubmitted && phase === 'idle' && (
-        <div style={{ marginTop: '14px', textAlign: 'center', fontFamily: 'var(--font-body)', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+        <div style={{ marginTop: '14px', textAlign: 'center', fontFamily: 'var(--font-body)', fontSize: '1rem', color: 'var(--text-muted)' }}>
           Last recorded: <span style={{ color: 'var(--neon-green)', fontWeight: 600 }}>{lastSubmitted}</span>
         </div>
       )}

@@ -32,7 +32,7 @@
   --border-bright: #00c8d4;
   --text-primary:  #d4eef4;
   --text-secondary:#6ec6d4;
-  --text-muted:    #2e6878;
+  --text-muted:    #3a7888;
   --header-bg:     rgba(7,15,20,0.96);
   --grid-line:     rgba(0,200,212,0.04);
   --shadow-glow:   rgba(0,200,212,0.12);
@@ -82,8 +82,8 @@ body {
   background-color: var(--bg-primary);
   color: var(--text-primary);
   font-family: var(--font-body);
-  font-size: 16px;
-  line-height: 1.5;
+  font-size: 18px;
+  line-height: 1.6;
   min-height: 100vh;
   overflow-x: hidden;
   transition: background-color 0.3s ease, color 0.3s ease;
@@ -127,15 +127,34 @@ body::before {
   opacity: 0.6;
 }
 
+/* ── Panel titles ─────────────────────────────────────────── */
+.panel-title {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 18px;
+  text-transform: uppercase;
+}
+
+.panel-title-dot {
+  color: var(--neon-cyan);
+  font-size: 0.7rem;
+}
+
 /* ── Buttons ──────────────────────────────────────────────── */
 .btn {
   font-family: var(--font-display);
-  font-size: 0.9rem;
+  font-size: 1rem;
   font-weight: 600;
   letter-spacing: 0.08em;
   border: none;
   cursor: pointer;
-  padding: 10px 24px;
+  padding: 12px 28px;
   border-radius: 4px;
   transition: all 0.2s ease;
   text-transform: uppercase;
@@ -157,9 +176,9 @@ body::before {
   background: transparent;
   border: 1.5px solid var(--neon-green);
   color: var(--neon-green);
-  font-size: 1rem;
+  font-size: 1.1rem;
   font-weight: 700;
-  padding: 14px 48px;
+  padding: 16px 52px;
   border-radius: 4px;
 }
 .btn-record:hover:not(:disabled) {
@@ -179,8 +198,8 @@ body::before {
   background: transparent;
   border: 1.5px solid var(--border);
   color: var(--text-secondary);
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   padding: 0;
   border-radius: 50%;
   display: flex;
@@ -188,7 +207,7 @@ body::before {
   justify-content: center;
   cursor: pointer;
   transition: all 0.2s ease;
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   flex-shrink: 0;
 }
 .btn-theme:hover {

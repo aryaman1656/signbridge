@@ -70,7 +70,7 @@ export default function App() {
         <div>
           <div style={{
             fontFamily: 'var(--font-display)',
-            fontSize: '1.6rem',
+            fontSize: '2rem',
             fontWeight: 700,
             letterSpacing: '0.15em',
             lineHeight: 1,
@@ -80,7 +80,7 @@ export default function App() {
           </div>
           <div style={{
             fontFamily: 'var(--font-mono)',
-            fontSize: '0.7rem',
+            fontSize: '0.85rem',
             color: 'var(--text-muted)',
             letterSpacing: '0.18em',
             marginTop: '3px'
@@ -94,7 +94,7 @@ export default function App() {
           {isLive && (
             <div style={{
               fontFamily: 'var(--font-mono)',
-              fontSize: '0.75rem',
+              fontSize: '0.9rem',
               color: 'var(--neon-green)',
               display: 'flex',
               alignItems: 'center',
@@ -143,7 +143,7 @@ export default function App() {
           }}>
             <div style={{
               fontFamily: 'var(--font-display)',
-              fontSize: '0.8rem',
+              fontSize: '1.05rem',
               fontWeight: 700,
               letterSpacing: '0.15em',
               color: 'var(--neon-cyan)',
@@ -153,7 +153,7 @@ export default function App() {
             </div>
             <div style={{
               fontFamily: 'var(--font-body)',
-              fontSize: '0.95rem',
+              fontSize: '1.05rem',
               color: 'var(--text-secondary)',
               lineHeight: 1.9,
               display: 'flex',
@@ -214,7 +214,7 @@ export default function App() {
         textAlign: 'center',
         padding: '40px 32px 0',
         fontFamily: 'var(--font-mono)',
-        fontSize: '0.7rem',
+        fontSize: '0.85rem',
         color: 'var(--text-muted)',
         letterSpacing: '0.12em'
       }}>

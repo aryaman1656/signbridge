@@ -47,7 +47,7 @@ function FlexBar({ label, color, rawValue }) {
       {/* Raw value */}
       <span style={{
         fontFamily: 'var(--font-mono)',
-        fontSize: '0.8rem',
+        fontSize: '1rem',
         color: color,
       }}>
         {rawValue}
@@ -56,7 +56,7 @@ function FlexBar({ label, color, rawValue }) {
       {/* Label */}
       <span style={{
         fontFamily: 'var(--font-display)',
-        fontSize: '0.65rem',
+        fontSize: '0.8rem',
         fontWeight: 600,
         letterSpacing: '0.06em',
         color: 'var(--text-muted)',

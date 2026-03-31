@@ -18,7 +18,7 @@ function MiniGraph({ title, lines, buffer, domain }) {
       {/* Graph label row */}
       <div style={{
         fontFamily: 'var(--font-mono)',
-        fontSize: '0.72rem',
+        fontSize: '0.88rem',
         marginBottom: '6px',
         display: 'flex',
         gap: '10px',
@@ -70,8 +70,8 @@ function ValueBadge({ label, value, color }) {
       minWidth: '68px',
       gap: '2px'
     }}>
-      <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: 'var(--text-muted)' }}>{label}</span>
-      <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.9rem', color: color, fontWeight: 600 }}>
+      <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8rem', color: 'var(--text-muted)' }}>{label}</span>
+      <span style={{ fontFamily: 'var(--font-mono)', fontSize: '1.05rem', color: color, fontWeight: 600 }}>
         {typeof value === 'number' ? value.toFixed(2) : '0.00'}
       </span>
     </div>
