@@ -5,74 +5,62 @@ export default function SerialConnect({ connected, error, portInfo, onConnect, o
   const isSupported = typeof navigator !== 'undefined' && 'serial' in navigator
 
   return (
-    <div style={{
+    <div className="glass" style={{
       display: 'flex',
       alignItems: 'center',
       gap: '16px',
-      padding: '14px 20px',
-      background: 'var(--bg-card)',
-      border: '1px solid var(--border)',
-      borderRadius: '6px',
+      padding: '14px 22px',
       flexWrap: 'wrap',
-      boxShadow: '0 2px 12px var(--shadow-glow)'
     }}>
-      {/* Status dot + label */}
+      {/* Status */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
         <div style={{
           width: '10px', height: '10px', borderRadius: '50%',
           background: connected ? 'var(--neon-green)' : error ? 'var(--neon-orange)' : 'var(--text-muted)',
-          boxShadow: connected ? '0 0 8px var(--neon-green)' : 'none',
-          flexShrink: 0
+          boxShadow: connected ? '0 0 10px var(--neon-green)' : 'none',
+          flexShrink: 0,
+          animation: connected ? 'pulse-glow 2s infinite' : 'none'
         }} />
         <span style={{
           fontFamily: 'var(--font-display)',
           fontSize: '1rem',
           fontWeight: 600,
-          letterSpacing: '0.08em',
+          letterSpacing: '0.06em',
           color: connected ? 'var(--neon-green)' : error ? 'var(--neon-orange)' : 'var(--text-muted)',
         }}>
-          {connected ? 'Connected' : error ? 'Error' : 'Disconnected'}
+          {connected ? 'ESP32 Connected' : error ? 'Connection Error' : 'ESP32 Disconnected'}
         </span>
       </div>
 
-      {/* Port info */}
       {portInfo && (
         <span style={{
           fontFamily: 'var(--font-mono)',
-          fontSize: '0.95rem',
+          fontSize: '0.8rem',
           color: 'var(--text-secondary)',
-          background: 'var(--bg-secondary)',
+          background: 'rgba(255,255,255,0.06)',
           padding: '3px 10px',
-          borderRadius: '4px',
-          border: '1px solid var(--border)',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '5px'
+          borderRadius: '6px',
+          border: '1px solid var(--glass-border)',
+          display: 'flex', alignItems: 'center', gap: '5px'
         }}>
-          <Radio size={12} />
-          {portInfo}
+          <Radio size={11} /> {portInfo}
         </span>
       )}
 
-      {/* Error message */}
       {error && (
         <span style={{
-          fontFamily: 'var(--font-body)',
-          fontSize: '1rem',
+          fontFamily: 'var(--font-body)', fontSize: '0.9rem',
           color: 'var(--neon-orange)',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '5px'
+          display: 'flex', alignItems: 'center', gap: '5px'
         }}>
-          <AlertCircle size={14} />
-          {error}
+          <AlertCircle size={14} /> {error}
         </span>
       )}
 
       <div style={{ marginLeft: 'auto' }}>
         {!isSupported ? (
-          <span style={{ fontFamily: 'var(--font-body)', fontSize: '1rem', color: 'var(--neon-orange)' }}>
-            ⚠ Use Chrome or Edge for Web Serial support
+          <span style={{ fontFamily: 'var(--font-body)', fontSize: '0.9rem', color: 'var(--neon-orange)' }}>
+            ⚠ Use Chrome or Edge
           </span>
         ) : connected ? (
           <button className="btn btn-danger" onClick={onDisconnect}

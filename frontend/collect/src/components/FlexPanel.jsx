@@ -14,49 +14,44 @@ function FlexBar({ label, color, rawValue }) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', flex: 1 }}>
-      {/* Bar */}
+      {/* Bar track */}
       <div style={{
-        width: '32px',
+        width: '34px',
         height: '130px',
-        background: 'var(--bg-secondary)',
-        border: `1px solid ${color}44`,
-        borderRadius: '4px',
+        background: 'rgba(255,255,255,0.05)',
+        border: `1px solid ${color}33`,
+        borderRadius: '8px',
         position: 'relative',
         overflow: 'hidden',
       }}>
+        {/* Fill */}
         <div style={{
           position: 'absolute',
           bottom: 0, left: 0, right: 0,
           height: `${pct}%`,
-          background: `linear-gradient(to top, ${color}, ${color}88)`,
-          boxShadow: `0 0 10px ${color}66`,
+          background: `linear-gradient(to top, ${color}, ${color}66)`,
+          boxShadow: `0 0 12px ${color}55`,
           transition: 'height 0.06s ease',
-          borderRadius: '3px',
+          borderRadius: '6px',
         }} />
+        {/* Tick marks */}
         {[25, 50, 75].map(p => (
           <div key={p} style={{
             position: 'absolute',
             bottom: `${p}%`,
-            left: 0, right: 0,
+            left: '20%', right: '20%',
             height: '1px',
-            background: 'rgba(128,128,128,0.15)',
+            background: 'rgba(255,255,255,0.1)',
           }} />
         ))}
       </div>
 
-      {/* Raw value */}
-      <span style={{
-        fontFamily: 'var(--font-mono)',
-        fontSize: '1rem',
-        color: color,
-      }}>
+      <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.85rem', color: color }}>
         {rawValue}
       </span>
-
-      {/* Label */}
       <span style={{
         fontFamily: 'var(--font-display)',
-        fontSize: '0.8rem',
+        fontSize: '0.7rem',
         fontWeight: 600,
         letterSpacing: '0.06em',
         color: 'var(--text-muted)',
@@ -70,7 +65,7 @@ function FlexBar({ label, color, rawValue }) {
 
 export default function FlexPanel({ flex }) {
   return (
-    <div className="card" style={{ padding: '20px' }}>
+    <div className="glass" style={{ padding: '22px' }}>
       <div className="panel-title">
         <span className="panel-title-dot">◆</span>
         Flex Sensors

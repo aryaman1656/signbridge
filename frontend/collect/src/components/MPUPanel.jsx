@@ -15,11 +15,10 @@ const GYRO_LINES = [
 function MiniGraph({ title, lines, buffer, domain }) {
   return (
     <div style={{ flex: 1 }}>
-      {/* Graph label row */}
       <div style={{
         fontFamily: 'var(--font-mono)',
-        fontSize: '0.88rem',
-        marginBottom: '6px',
+        fontSize: '0.8rem',
+        marginBottom: '8px',
         display: 'flex',
         gap: '10px',
         alignItems: 'center'
@@ -31,9 +30,9 @@ function MiniGraph({ title, lines, buffer, domain }) {
       </div>
       <div style={{
         height: '100px',
-        background: 'var(--bg-secondary)',
-        border: '1px solid var(--border)',
-        borderRadius: '4px',
+        background: 'rgba(0,0,0,0.15)',
+        border: '1px solid var(--glass-border)',
+        borderRadius: '10px',
         overflow: 'hidden'
       }}>
         <ResponsiveContainer width="100%" height="100%">
@@ -63,15 +62,15 @@ function ValueBadge({ label, value, color }) {
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
-      background: 'var(--bg-secondary)',
+      background: 'rgba(255,255,255,0.05)',
       border: `1px solid ${color}33`,
-      borderRadius: '4px',
-      padding: '8px 12px',
-      minWidth: '68px',
+      borderRadius: '10px',
+      padding: '10px 12px',
+      minWidth: '72px',
       gap: '2px'
     }}>
-      <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8rem', color: 'var(--text-muted)' }}>{label}</span>
-      <span style={{ fontFamily: 'var(--font-mono)', fontSize: '1.05rem', color: color, fontWeight: 600 }}>
+      <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', color: 'var(--text-muted)' }}>{label}</span>
+      <span style={{ fontFamily: 'var(--font-mono)', fontSize: '1rem', color: color, fontWeight: 600 }}>
         {typeof value === 'number' ? value.toFixed(2) : '0.00'}
       </span>
     </div>
@@ -81,13 +80,11 @@ function ValueBadge({ label, value, color }) {
 export default function MPUPanel({ buffer, latest }) {
   const mpu = latest?.mpu ?? {}
   return (
-    <div className="card" style={{ padding: '20px' }}>
+    <div className="glass" style={{ padding: '22px' }}>
       <div className="panel-title">
         <span className="panel-title-dot">◆</span>
         MPU6050 — Accelerometer + Gyroscope
       </div>
-
-      {/* Value badges */}
       <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
         <ValueBadge label="ACCEL X" value={mpu.accelX} color="var(--accel-x)" />
         <ValueBadge label="ACCEL Y" value={mpu.accelY} color="var(--accel-y)" />
@@ -96,8 +93,6 @@ export default function MPUPanel({ buffer, latest }) {
         <ValueBadge label="GYRO Y"  value={mpu.gyroY}  color="var(--gyro-y)" />
         <ValueBadge label="GYRO Z"  value={mpu.gyroZ}  color="var(--gyro-z)" />
       </div>
-
-      {/* Graphs */}
       <div style={{ display: 'flex', gap: '16px' }}>
         <MiniGraph title="ACCEL" lines={ACCEL_LINES} buffer={buffer} domain={[-20, 20]} />
         <MiniGraph title="GYRO"  lines={GYRO_LINES}  buffer={buffer} domain={[-500, 500]} />

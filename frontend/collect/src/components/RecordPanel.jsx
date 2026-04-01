@@ -58,30 +58,31 @@ export default function RecordPanel({ connected, isLive, onStartCapture, onStopC
   useEffect(() => () => clearInterval(timerRef.current), [])
 
   return (
-    <div className="card" style={{ padding: '24px' }}>
+    <div className="glass" style={{ padding: '26px' }}>
       <div className="panel-title">
         <span className="panel-title-dot">◆</span>
         Gesture Recording
       </div>
 
-      {/* Gesture selector */}
-      <div style={{ display: 'flex', gap: '12px', marginBottom: '20px', flexWrap: 'wrap' }}>
+      {/* Selector */}
+      <div style={{ display: 'flex', gap: '12px', marginBottom: '22px', flexWrap: 'wrap' }}>
         <select
           value={selectedGesture}
           onChange={e => setSelectedGesture(e.target.value)}
           disabled={phase !== 'idle'}
           style={{
-            background: 'var(--bg-secondary)',
-            border: '1px solid var(--border)',
+            background: 'rgba(255,255,255,0.07)',
+            backdropFilter: 'blur(8px)',
+            border: '1px solid var(--glass-border)',
             color: 'var(--text-primary)',
             fontFamily: 'var(--font-body)',
-            fontSize: '1.05rem',
-            padding: '10px 14px',
-            borderRadius: '4px',
+            fontSize: '1rem',
+            padding: '11px 16px',
+            borderRadius: '10px',
             flex: 1,
             minWidth: '180px',
             cursor: 'pointer',
-            outline: 'none'
+            outline: 'none',
           }}
         >
           <option value="">— Select a gesture —</option>
@@ -97,31 +98,32 @@ export default function RecordPanel({ connected, isLive, onStartCapture, onStopC
             onChange={e => setCustomGesture(e.target.value)}
             disabled={phase !== 'idle'}
             style={{
-              background: 'var(--bg-secondary)',
-              border: '1.5px solid var(--neon-cyan)',
+              background: 'rgba(34,211,238,0.07)',
+              backdropFilter: 'blur(8px)',
+              border: '1px solid rgba(34,211,238,0.4)',
               color: 'var(--text-primary)',
               fontFamily: 'var(--font-body)',
-              fontSize: '1.05rem',
-              padding: '10px 14px',
-              borderRadius: '4px',
+              fontSize: '1rem',
+              padding: '11px 16px',
+              borderRadius: '10px',
               flex: 1,
               minWidth: '180px',
-              outline: 'none'
+              outline: 'none',
             }}
           />
         )}
       </div>
 
-      {/* Status display */}
+      {/* Status */}
       <div style={{
-        height: '72px',
+        height: '76px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        marginBottom: '20px'
+        marginBottom: '22px'
       }}>
         {phase === 'idle' && (
-          <span style={{ fontFamily: 'var(--font-body)', fontSize: '1.05rem', color: 'var(--text-muted)' }}>
+          <span style={{ fontFamily: 'var(--font-body)', fontSize: '1rem', color: 'var(--text-muted)' }}>
             {!connected  ? '⚠  Connect ESP32 first' :
              !isLive     ? '⚠  Waiting for sensor data…' :
              !gestureName? 'Select a gesture to begin' :
@@ -136,11 +138,12 @@ export default function RecordPanel({ connected, isLive, onStartCapture, onStopC
               fontSize: '3.5rem',
               fontWeight: 700,
               color: 'var(--neon-yellow)',
-              lineHeight: 1
+              lineHeight: 1,
+              textShadow: '0 0 30px rgba(251,191,36,0.5)'
             }}>
               {countdown}
             </div>
-            <div style={{ fontFamily: 'var(--font-body)', fontSize: '1rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+            <div style={{ fontFamily: 'var(--font-body)', fontSize: '0.9rem', color: 'var(--text-muted)', marginTop: '4px' }}>
               Get ready…
             </div>
           </div>
@@ -148,25 +151,29 @@ export default function RecordPanel({ connected, isLive, onStartCapture, onStopC
 
         {phase === 'recording' && (
           <div style={{ textAlign: 'center', width: '100%' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '10px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '12px' }}>
               <CircleDot size={16} color="var(--neon-orange)" style={{ animation: 'blink 0.6s infinite' }} />
-              <span style={{ fontFamily: 'var(--font-display)', fontSize: '1.05rem', fontWeight: 700, color: 'var(--neon-orange)', letterSpacing: '0.08em' }}>
+              <span style={{
+                fontFamily: 'var(--font-display)', fontSize: '1rem',
+                fontWeight: 700, color: 'var(--neon-orange)', letterSpacing: '0.06em'
+              }}>
                 Recording — {gestureName}
               </span>
             </div>
             <div style={{
-              height: '5px',
-              background: 'var(--bg-secondary)',
-              borderRadius: '3px',
+              height: '6px',
+              background: 'rgba(255,255,255,0.1)',
+              borderRadius: '4px',
               overflow: 'hidden',
               margin: '0 24px'
             }}>
               <div style={{
                 height: '100%',
                 width: `${progress}%`,
-                background: 'var(--neon-orange)',
-                borderRadius: '3px',
-                transition: 'width 0.05s linear'
+                background: 'linear-gradient(90deg, var(--neon-orange), var(--neon-yellow))',
+                borderRadius: '4px',
+                transition: 'width 0.05s linear',
+                boxShadow: '0 0 8px rgba(251,146,60,0.5)'
               }} />
             </div>
           </div>
@@ -174,36 +181,39 @@ export default function RecordPanel({ connected, isLive, onStartCapture, onStopC
 
         {phase === 'done' && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <CheckCircle size={20} color="var(--neon-green)" />
-            <span style={{ fontFamily: 'var(--font-display)', fontSize: '1rem', fontWeight: 700, color: 'var(--neon-green)', letterSpacing: '0.06em' }}>
+            <CheckCircle size={22} color="var(--neon-green)" />
+            <span style={{
+              fontFamily: 'var(--font-display)', fontSize: '1.05rem',
+              fontWeight: 700, color: 'var(--neon-green)',
+              textShadow: '0 0 16px rgba(52,211,153,0.4)'
+            }}>
               Sample saved!
             </span>
           </div>
         )}
       </div>
 
-      {/* Record button */}
+      {/* Button */}
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '20px' }}>
         <button
           className={`btn btn-record ${phase === 'recording' ? 'recording-pulse' : ''}`}
           onClick={startSequence}
           disabled={!canRecord}
         >
-          {phase === 'idle'      ? '● Record Gesture'       :
+          {phase === 'idle'      ? '● Record Gesture'          :
            phase === 'countdown' ? `Starting in ${countdown}…` :
-           phase === 'recording' ? '● Capturing…'           :
+           phase === 'recording' ? '● Capturing…'              :
            '✓ Saved'}
         </button>
-
         {gestureName && phase === 'idle' && (
-          <span style={{ fontFamily: 'var(--font-body)', fontSize: '1rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <Clock size={13} /> {RECORD_DURATION / 1000}s capture
+          <span style={{ fontFamily: 'var(--font-body)', fontSize: '0.9rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <Clock size={13} /> {RECORD_DURATION / 1000}s
           </span>
         )}
       </div>
 
       {lastSubmitted && phase === 'idle' && (
-        <div style={{ marginTop: '14px', textAlign: 'center', fontFamily: 'var(--font-body)', fontSize: '1rem', color: 'var(--text-muted)' }}>
+        <div style={{ marginTop: '14px', textAlign: 'center', fontFamily: 'var(--font-body)', fontSize: '0.9rem', color: 'var(--text-muted)' }}>
           Last recorded: <span style={{ color: 'var(--neon-green)', fontWeight: 600 }}>{lastSubmitted}</span>
         </div>
       )}
