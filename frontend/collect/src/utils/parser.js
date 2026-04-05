@@ -44,8 +44,8 @@ export function parseSensorLine(raw) {
  * Normalize flex sensor value to 0–100 range.
  * Adjust MIN/MAX based on your actual sensor calibration.
  */
-export const FLEX_MIN = 300
-export const FLEX_MAX = 800
+export const FLEX_MIN = 200
+export const FLEX_MAX = 700
 
 export function normalizeFlex(raw) {
   const clamped = Math.min(Math.max(raw, FLEX_MIN), FLEX_MAX)

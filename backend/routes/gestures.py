@@ -2,9 +2,11 @@
 routes/gestures.py
 Endpoints for submitting and retrieving gesture data.
 
-POST /gestures       — save a recorded gesture sample
-GET  /gestures       — list all gestures (with optional filters)
-GET  /gestures/{id}  — get a single gesture record by ID
+POST   /gestures/        — save a recorded gesture sample
+GET    /gestures/        — list all gestures (with optional filters)
+GET    /gestures/mine    — list gestures for a specific user
+GET    /gestures/{id}    — get a single gesture record by ID
+DELETE /gestures/{id}    — delete a gesture (only if owned by requester)
 """
 
 from fastapi import APIRouter, HTTPException, Query
@@ -19,17 +21,15 @@ router = APIRouter(prefix="/gestures", tags=["gestures"])
 
 
 def serialize(doc) -> dict:
-    """Convert MongoDB document to JSON-serializable dict."""
     doc["id"] = str(doc.pop("_id"))
+    if "capturedAt" in doc and hasattr(doc["capturedAt"], "isoformat"):
+        doc["capturedAt"] = doc["capturedAt"].isoformat()
     return doc
 
 
 # ── POST /gestures ────────────────────────────────────────────
 @router.post("/", response_model=GestureResponse)
 async def submit_gesture(payload: GestureSubmission):
-    """
-    Receive a recorded gesture from the frontend and store it in MongoDB.
-    """
     db = get_db()
 
     if len(payload.samples) == 0:
@@ -55,28 +55,44 @@ async def submit_gesture(payload: GestureSubmission):
     )
 
 
-# ── GET /gestures ─────────────────────────────────────────────
-@router.get("/")
-async def list_gestures(
-    gesture:  Optional[str] = Query(None, description="Filter by gesture name"),
-    limit:    int           = Query(50,   ge=1, le=500),
-    skip:     int           = Query(0,    ge=0),
+# ── GET /gestures/mine ────────────────────────────────────────
+@router.get("/mine")
+async def get_my_gestures(
+    email: str = Query(..., description="User email"),
+    limit: int = Query(100, ge=1, le=500),
+    skip:  int = Query(0,   ge=0),
 ):
     """
-    List gesture records. Optionally filter by gesture name.
-    Returns records without the full sample arrays (for performance).
+    List all gesture records for a specific user, newest first.
+    Excludes the raw samples array for performance.
     """
     db = get_db()
 
+    cursor = db["gestures"].find(
+        {"contributor": email},
+        {"samples": 0}
+    ).sort("capturedAt", -1).skip(skip).limit(limit)
+
+    results = []
+    async for doc in cursor:
+        results.append(serialize(doc))
+
+    return {"count": len(results), "data": results}
+
+
+# ── GET /gestures ─────────────────────────────────────────────
+@router.get("/")
+async def list_gestures(
+    gesture: Optional[str] = Query(None),
+    limit:   int           = Query(50, ge=1, le=500),
+    skip:    int           = Query(0,  ge=0),
+):
+    db = get_db()
     query = {}
     if gesture:
         query["gesture"] = gesture.strip().upper()
 
-    cursor = db["gestures"].find(
-        query,
-        {"samples": 0}   # exclude samples array for listing
-    ).sort("capturedAt", -1).skip(skip).limit(limit)
-
+    cursor = db["gestures"].find(query, {"samples": 0}).sort("capturedAt", -1).skip(skip).limit(limit)
     results = []
     async for doc in cursor:
         results.append(serialize(doc))
@@ -87,12 +103,7 @@ async def list_gestures(
 # ── GET /gestures/{id} ────────────────────────────────────────
 @router.get("/{gesture_id}")
 async def get_gesture(gesture_id: str):
-    """
-    Get a single gesture record by its MongoDB ID, including all samples.
-    Used for ML training data export.
-    """
     db = get_db()
-
     try:
         oid = ObjectId(gesture_id)
     except Exception:
@@ -103,3 +114,34 @@ async def get_gesture(gesture_id: str):
         raise HTTPException(status_code=404, detail="Gesture record not found")
 
     return serialize(doc)
+
+
+# ── DELETE /gestures/{id} ─────────────────────────────────────
+@router.delete("/{gesture_id}")
+async def delete_gesture(
+    gesture_id: str,
+    email: str = Query(..., description="Email of the user requesting deletion")
+):
+    """
+    Delete a gesture record.
+    Only succeeds if the gesture belongs to the requesting user's email.
+    """
+    db = get_db()
+
+    try:
+        oid = ObjectId(gesture_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid ID format")
+
+    # Find the record first
+    doc = await db["gestures"].find_one({"_id": oid})
+    if not doc:
+        raise HTTPException(status_code=404, detail="Gesture record not found")
+
+    # Check ownership
+    if doc.get("contributor") != email:
+        raise HTTPException(status_code=403, detail="You can only delete your own gestures")
+
+    await db["gestures"].delete_one({"_id": oid})
+
+    return {"success": True, "message": f"Deleted gesture '{doc['gesture']}'"}
