@@ -1,6 +1,8 @@
 """
 models/gesture.py
 Pydantic models for request validation and response serialization.
+Updated to include signLanguage and word fields for multi-language support.
+Old data without these fields defaults to signLanguage="ASL".
 """
 
 from pydantic import BaseModel, Field
@@ -33,26 +35,31 @@ class SensorSample(BaseModel):
 
 class GestureSubmission(BaseModel):
     """What the frontend sends when recording a gesture."""
-    gesture:     str            = Field(..., min_length=1, max_length=64)
-    samples:     List[SensorSample]
-    contributor: Optional[str] = "anonymous"
-    region:      Optional[str] = None
+    gesture:      str             = Field(..., min_length=1, max_length=64)
+    word:         Optional[str]   = None   # preferred label going forward; falls back to gesture
+    signLanguage: Optional[str]   = "ASL"  # which sign language this recording is for
+    samples:      List[SensorSample]
+    contributor:  Optional[str]   = "anonymous"
+    region:       Optional[str]   = None
 
 
 class GestureRecord(BaseModel):
     """What gets stored in MongoDB."""
-    gesture:     str
-    samples:     List[SensorSample]
-    sampleCount: int
-    contributor: str
-    region:      Optional[str]
-    capturedAt:  datetime
+    gesture:      str
+    word:         Optional[str]
+    signLanguage: str
+    samples:      List[SensorSample]
+    sampleCount:  int
+    contributor:  str
+    region:       Optional[str]
+    capturedAt:   datetime
 
 
 class GestureResponse(BaseModel):
     """What the API returns after saving."""
-    success:    bool
-    id:         str
-    gesture:    str
+    success:     bool
+    id:          str
+    gesture:     str
+    signLanguage: str
     sampleCount: int
-    message:    str
+    message:     str

@@ -57,15 +57,33 @@ export function useSensorBuffer() {
     tickRef.current += 1
     const t = tickRef.current
 
-    setLatest({ flex: { ...parsed.flex }, mpu: { ...parsed.mpu } })
+    // Normalise flex: could be array, numeric-keyed obj, or named-key obj
+    let flex = parsed.flex ?? {}
+    if (Array.isArray(flex)) {
+      flex = { f1: flex[0] ?? 0, f2: flex[1] ?? 0, f3: flex[2] ?? 0, f4: flex[3] ?? 0, f5: flex[4] ?? 0 }
+    } else if ('0' in flex) {
+      flex = { f1: flex[0] ?? 0, f2: flex[1] ?? 0, f3: flex[2] ?? 0, f4: flex[3] ?? 0, f5: flex[4] ?? 0 }
+    }
+
+    // Normalise mpu: could be nested { mpu: {...} } or flat { ax, ay, az, gx, gy, gz }
+    const mpu = parsed.mpu ?? {
+      accelX: parsed.ax ?? 0,
+      accelY: parsed.ay ?? 0,
+      accelZ: parsed.az ?? 9.8,
+      gyroX:  parsed.gx ?? 0,
+      gyroY:  parsed.gy ?? 0,
+      gyroZ:  parsed.gz ?? 0,
+    }
+
+    setLatest({ flex: { ...flex }, mpu: { ...mpu } })
     setBuffer(prev => [...prev.slice(1), {
       t,
-      accelX: parsed.mpu.accelX,
-      accelY: parsed.mpu.accelY,
-      accelZ: parsed.mpu.accelZ,
-      gyroX:  parsed.mpu.gyroX,
-      gyroY:  parsed.mpu.gyroY,
-      gyroZ:  parsed.mpu.gyroZ,
+      accelX: mpu.accelX,
+      accelY: mpu.accelY,
+      accelZ: mpu.accelZ,
+      gyroX:  mpu.gyroX,
+      gyroY:  mpu.gyroY,
+      gyroZ:  mpu.gyroZ,
     }])
     setIsLive(true)
     captureRef.current.push(parsed)

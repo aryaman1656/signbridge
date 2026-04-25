@@ -1,79 +1,84 @@
 import React from 'react'
-import { Usb, Unplug, AlertCircle, Radio } from 'lucide-react'
 
-export default function SerialConnect({ connected, error, portInfo, onConnect, onDisconnect }) {
-  const isSupported = typeof navigator !== 'undefined' && 'serial' in navigator
+// ─── SerialConnect ────────────────────────────────────────────────────────────
+// Props:
+//   connected      {boolean}
+//   error          {string|null}
+//   portInfo       {object|null}
+//   deviceConfig   {object}   – the currently active device profile
+//   onConnect      {function}
+//   onDisconnect   {function}
+
+export default function SerialConnect({ connected, error, portInfo, deviceConfig, onConnect, onDisconnect }) {
+  const { label, baudRate } = deviceConfig
 
   return (
-    <div className="glass" style={{
-      display: 'flex',
-      alignItems: 'center',
-      gap: '16px',
-      padding: '14px 22px',
-      flexWrap: 'wrap',
+    <div style={{
+      display: 'flex', alignItems: 'center', gap: '12px',
+      padding: '12px 18px', borderRadius: '12px',
+      background: 'var(--glass-bg)', backdropFilter: 'blur(12px)',
+      WebkitBackdropFilter: 'blur(12px)',
+      border: `1px solid ${connected ? 'rgba(74,222,128,0.35)' : error ? 'rgba(248,113,113,0.35)' : 'var(--glass-border)'}`,
+      transition: 'border-color 0.3s', flex: 1,
     }}>
-      {/* Status */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-        <div style={{
-          width: '10px', height: '10px', borderRadius: '50%',
-          background: connected ? 'var(--neon-green)' : error ? 'var(--neon-orange)' : 'var(--text-muted)',
-          boxShadow: connected ? '0 0 10px var(--neon-green)' : 'none',
-          flexShrink: 0,
-          animation: connected ? 'pulse-glow 2s infinite' : 'none'
-        }} />
-        <span style={{
-          fontFamily: 'var(--font-display)',
-          fontSize: '1rem',
-          fontWeight: 600,
-          letterSpacing: '0.06em',
-          color: connected ? 'var(--neon-green)' : error ? 'var(--neon-orange)' : 'var(--text-muted)',
-        }}>
-          {connected ? 'ESP32 Connected' : error ? 'Connection Error' : 'ESP32 Disconnected'}
-        </span>
-      </div>
 
-      {portInfo && (
-        <span style={{
-          fontFamily: 'var(--font-mono)',
-          fontSize: '0.8rem',
-          color: 'var(--text-secondary)',
-          background: 'rgba(255,255,255,0.06)',
-          padding: '3px 10px',
-          borderRadius: '6px',
-          border: '1px solid var(--glass-border)',
-          display: 'flex', alignItems: 'center', gap: '5px'
-        }}>
-          <Radio size={11} /> {portInfo}
-        </span>
-      )}
+      {/* Status dot */}
+      <div style={{
+        width: '10px', height: '10px', borderRadius: '50%', flexShrink: 0,
+        background:  connected ? 'var(--neon-green)' : error ? '#f87171' : 'var(--text-muted)',
+        boxShadow:   connected ? '0 0 8px var(--neon-green)' : error ? '0 0 8px #f87171' : 'none',
+        transition:  'all 0.3s',
+      }} />
 
-      {error && (
-        <span style={{
-          fontFamily: 'var(--font-body)', fontSize: '0.9rem',
-          color: 'var(--neon-orange)',
-          display: 'flex', alignItems: 'center', gap: '5px'
-        }}>
-          <AlertCircle size={14} /> {error}
-        </span>
-      )}
-
-      <div style={{ marginLeft: 'auto' }}>
-        {!isSupported ? (
-          <span style={{ fontFamily: 'var(--font-body)', fontSize: '0.9rem', color: 'var(--neon-orange)' }}>
-            ⚠ Use Chrome or Edge
-          </span>
-        ) : connected ? (
-          <button className="btn btn-danger" onClick={onDisconnect}
-            style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <Unplug size={15} /> Disconnect
-          </button>
+      {/* Info */}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        {connected && portInfo ? (
+          <div>
+            <div style={{ fontFamily: 'var(--font-display)', fontSize: '0.85rem', fontWeight: 700, color: 'var(--neon-green)', letterSpacing: '0.08em' }}>
+              {portInfo.device} CONNECTED
+            </div>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+              {portInfo.baudRate} BAUD
+              {portInfo.usbVendorId  ? ` · VID 0x${portInfo.usbVendorId.toString(16).toUpperCase().padStart(4,'0')}`  : ''}
+              {portInfo.usbProductId ? ` · PID 0x${portInfo.usbProductId.toString(16).toUpperCase().padStart(4,'0')}` : ''}
+            </div>
+          </div>
+        ) : error ? (
+          <div style={{ fontFamily: 'var(--font-body)', fontSize: '0.85rem', color: '#f87171', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            ⚠ {error}
+          </div>
         ) : (
-          <button className="btn btn-primary" onClick={onConnect}
-            style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <Usb size={15} /> Connect ESP32
-          </button>
+          <div>
+            <div style={{ fontFamily: 'var(--font-display)', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)', letterSpacing: '0.06em' }}>
+              {label} NOT CONNECTED
+            </div>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+              {baudRate} BAUD · WEB SERIAL API
+            </div>
+          </div>
         )}
       </div>
+
+      {/* Button */}
+      {connected ? (
+        <button onClick={onDisconnect} style={{
+          fontFamily: 'var(--font-display)', fontSize: '0.85rem', fontWeight: 700,
+          letterSpacing: '0.06em', padding: '7px 16px', borderRadius: '8px',
+          border: '1px solid rgba(248,113,113,0.4)', background: 'rgba(248,113,113,0.1)',
+          color: '#f87171', cursor: 'pointer', transition: 'all 0.2s', whiteSpace: 'nowrap',
+        }}>
+          ⏏ Disconnect
+        </button>
+      ) : (
+        <button onClick={onConnect} style={{
+          fontFamily: 'var(--font-display)', fontSize: '0.85rem', fontWeight: 700,
+          letterSpacing: '0.06em', padding: '7px 16px', borderRadius: '8px',
+          border: '1px solid rgba(34,211,238,0.4)', background: 'rgba(34,211,238,0.1)',
+          color: 'var(--neon-cyan)', cursor: 'pointer', transition: 'all 0.2s', whiteSpace: 'nowrap',
+        }}>
+          ⚡ Connect {label}
+        </button>
+      )}
     </div>
   )
 }

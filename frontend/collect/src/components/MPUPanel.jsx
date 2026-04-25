@@ -1,5 +1,5 @@
 import React from 'react'
-import { ResponsiveContainer, LineChart, Line, YAxis } from 'recharts'
+import { ResponsiveContainer, LineChart, Line, YAxis, ReferenceLine } from 'recharts'
 
 const ACCEL_LINES = [
   { key: 'accelX', label: 'AX', color: 'var(--accel-x)' },
@@ -70,20 +70,58 @@ function ValueBadge({ label, value, color }) {
       gap: '2px'
     }}>
       <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', color: 'var(--text-muted)' }}>{label}</span>
-      <span style={{ fontFamily: 'var(--font-mono)', fontSize: '1rem', color: color, fontWeight: 600 }}>
+      <span style={{ fontFamily: 'var(--font-mono)', fontSize: '1rem', color, fontWeight: 600 }}>
         {typeof value === 'number' ? value.toFixed(2) : '0.00'}
       </span>
     </div>
   )
 }
 
+// Compute a tight auto-domain from the buffer for a given key,
+// with a minimum span so the line is never invisible.
+function autoDomain(buffer, key, minSpan = 2) {
+  const vals = buffer.map(r => r[key]).filter(v => v != null && isFinite(v))
+  if (vals.length === 0) return ['auto', 'auto']
+  const lo = Math.min(...vals)
+  const hi = Math.max(...vals)
+  const span = hi - lo
+  if (span < minSpan) {
+    const mid = (lo + hi) / 2
+    return [parseFloat((mid - minSpan / 2).toFixed(2)), parseFloat((mid + minSpan / 2).toFixed(2))]
+  }
+  const pad = span * 0.15
+  return [parseFloat((lo - pad).toFixed(2)), parseFloat((hi + pad).toFixed(2))]
+}
+
 export default function MPUPanel({ buffer, latest }) {
   const mpu = latest?.mpu ?? {}
+
+  // Auto-scale ACCEL domain so AZ (gravity ~9.81) variation is visible
+  const accelDomain = (() => {
+    const allVals = buffer.flatMap(r => [r.accelX, r.accelY, r.accelZ]).filter(v => v != null && isFinite(v))
+    if (!allVals.length) return [-15, 15]
+    const lo = Math.min(...allVals)
+    const hi = Math.max(...allVals)
+    const span = Math.max(hi - lo, 2)
+    const pad  = span * 0.2
+    return [parseFloat((lo - pad).toFixed(1)), parseFloat((hi + pad).toFixed(1))]
+  })()
+
+  const gyroDomain = (() => {
+    const allVals = buffer.flatMap(r => [r.gyroX, r.gyroY, r.gyroZ]).filter(v => v != null && isFinite(v))
+    if (!allVals.length) return [-250, 250]
+    const lo = Math.min(...allVals)
+    const hi = Math.max(...allVals)
+    const span = Math.max(hi - lo, 10)
+    const pad  = span * 0.2
+    return [parseFloat((lo - pad).toFixed(1)), parseFloat((hi + pad).toFixed(1))]
+  })()
+
   return (
     <div className="glass" style={{ padding: '22px' }}>
       <div className="panel-title">
-        <span className="panel-title-dot">◆</span>
-        MPU6050 — Accelerometer + Gyroscope
+        <span className="panel-title-dot">&#9670;</span>
+        MPU6050 &mdash; Accelerometer + Gyroscope
       </div>
       <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
         <ValueBadge label="ACCEL X" value={mpu.accelX} color="var(--accel-x)" />
@@ -94,8 +132,8 @@ export default function MPUPanel({ buffer, latest }) {
         <ValueBadge label="GYRO Z"  value={mpu.gyroZ}  color="var(--gyro-z)" />
       </div>
       <div style={{ display: 'flex', gap: '16px' }}>
-        <MiniGraph title="ACCEL" lines={ACCEL_LINES} buffer={buffer} domain={[-20, 20]} />
-        <MiniGraph title="GYRO"  lines={GYRO_LINES}  buffer={buffer} domain={[-500, 500]} />
+        <MiniGraph title="ACCEL" lines={ACCEL_LINES} buffer={buffer} domain={accelDomain} />
+        <MiniGraph title="GYRO"  lines={GYRO_LINES}  buffer={buffer} domain={gyroDomain} />
       </div>
     </div>
   )

@@ -35,13 +35,20 @@ async def submit_gesture(payload: GestureSubmission):
     if len(payload.samples) == 0:
         raise HTTPException(status_code=400, detail="No sensor samples provided")
 
+    gesture_label = payload.gesture.strip().upper()
+    # word falls back to gesture if not provided
+    word_label    = (payload.word or payload.gesture).strip()
+    lang          = (payload.signLanguage or "ASL").strip().upper()
+
     record = {
-        "gesture":     payload.gesture.strip().upper(),
-        "samples":     [s.model_dump() for s in payload.samples],
-        "sampleCount": len(payload.samples),
-        "contributor": payload.contributor or "anonymous",
-        "region":      payload.region,
-        "capturedAt":  datetime.now(timezone.utc),
+        "gesture":      gesture_label,
+        "word":         word_label,
+        "signLanguage": lang,
+        "samples":      [s.model_dump() for s in payload.samples],
+        "sampleCount":  len(payload.samples),
+        "contributor":  payload.contributor or "anonymous",
+        "region":       payload.region,
+        "capturedAt":   datetime.now(timezone.utc),
     }
 
     result = await db["gestures"].insert_one(record)
@@ -50,29 +57,26 @@ async def submit_gesture(payload: GestureSubmission):
         success=True,
         id=str(result.inserted_id),
         gesture=record["gesture"],
+        signLanguage=record["signLanguage"],
         sampleCount=record["sampleCount"],
-        message=f"Saved {record['sampleCount']} samples for gesture '{record['gesture']}'"
+        message=f"Saved {record['sampleCount']} samples for '{record['word']}' ({record['signLanguage']})"
     )
 
 
 # ── GET /gestures/mine ────────────────────────────────────────
 @router.get("/mine")
 async def get_my_gestures(
-    email: str = Query(..., description="User email"),
-    limit: int = Query(100, ge=1, le=500),
-    skip:  int = Query(0,   ge=0),
+    email:    str = Query(..., description="User email"),
+    limit:    int = Query(100, ge=1, le=500),
+    skip:     int = Query(0,   ge=0),
+    language: Optional[str] = Query(None, description="Filter by sign language code"),
 ):
-    """
-    List all gesture records for a specific user, newest first.
-    Excludes the raw samples array for performance.
-    """
     db = get_db()
+    query = {"contributor": email}
+    if language:
+        query["signLanguage"] = language.strip().upper()
 
-    cursor = db["gestures"].find(
-        {"contributor": email},
-        {"samples": 0}
-    ).sort("capturedAt", -1).skip(skip).limit(limit)
-
+    cursor = db["gestures"].find(query, {"samples": 0}).sort("capturedAt", -1).skip(skip).limit(limit)
     results = []
     async for doc in cursor:
         results.append(serialize(doc))
@@ -83,14 +87,17 @@ async def get_my_gestures(
 # ── GET /gestures ─────────────────────────────────────────────
 @router.get("/")
 async def list_gestures(
-    gesture: Optional[str] = Query(None),
-    limit:   int           = Query(50, ge=1, le=500),
-    skip:    int           = Query(0,  ge=0),
+    gesture:  Optional[str] = Query(None),
+    language: Optional[str] = Query(None),
+    limit:    int           = Query(50, ge=1, le=500),
+    skip:     int           = Query(0,  ge=0),
 ):
     db = get_db()
     query = {}
     if gesture:
         query["gesture"] = gesture.strip().upper()
+    if language:
+        query["signLanguage"] = language.strip().upper()
 
     cursor = db["gestures"].find(query, {"samples": 0}).sort("capturedAt", -1).skip(skip).limit(limit)
     results = []
@@ -122,10 +129,6 @@ async def delete_gesture(
     gesture_id: str,
     email: str = Query(..., description="Email of the user requesting deletion")
 ):
-    """
-    Delete a gesture record.
-    Only succeeds if the gesture belongs to the requesting user's email.
-    """
     db = get_db()
 
     try:
@@ -133,12 +136,10 @@ async def delete_gesture(
     except Exception:
         raise HTTPException(status_code=400, detail="Invalid ID format")
 
-    # Find the record first
     doc = await db["gestures"].find_one({"_id": oid})
     if not doc:
         raise HTTPException(status_code=404, detail="Gesture record not found")
 
-    # Check ownership
     if doc.get("contributor") != email:
         raise HTTPException(status_code=403, detail="You can only delete your own gestures")
 
