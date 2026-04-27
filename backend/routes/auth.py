@@ -23,7 +23,7 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 GOOGLE_CLIENT_ID = os.getenv(
     "GOOGLE_CLIENT_ID",
-    "912110345690-sjb2b0o6qu7j4pc63fi9abtcfca8ugqn.apps.googleusercontent.com"
+    "912110345690-vlf5dnla52chvlrosr572d81n3snl3tj.apps.googleusercontent.com"
 )
 
 # Super admin — can never be removed, hardcoded for security

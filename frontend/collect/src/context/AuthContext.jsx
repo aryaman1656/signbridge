@@ -16,14 +16,7 @@ function loadStoredUser() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (!raw) return null
-    const stored = JSON.parse(raw)
-    // Validate the Google JWT hasn't expired
-    const decoded = jwtDecode(stored.token)
-    if (decoded.exp && decoded.exp * 1000 < Date.now()) {
-      localStorage.removeItem(STORAGE_KEY)
-      return null
-    }
-    return stored
+    return JSON.parse(raw)
   } catch {
     localStorage.removeItem(STORAGE_KEY)
     return null
@@ -64,6 +57,16 @@ export function AuthProvider({ children }) {
       } catch (backendErr) {
         console.warn('Backend unreachable, continuing with Google-only login:', backendErr)
       }
+
+      // Double-check admin status via is-admin endpoint
+      try {
+        const adminRes = await fetch(`${API_URL}/auth/is-admin?email=${decoded.email}`)
+        if (adminRes.ok) {
+          const adminData = await adminRes.json()
+          isAdmin      = adminData.isAdmin      ?? isAdmin
+          isSuperAdmin = adminData.isSuperAdmin ?? isSuperAdmin
+        }
+      } catch (_) {}
 
       const newUser = {
         name:         decoded.name,

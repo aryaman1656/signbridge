@@ -134,7 +134,7 @@ function CollectPage() {
   const [theme,            setTheme]            = useState('dark')
   const [submitError,      setSubmitError]      = useState(null)
 
-  const isAdmin     = user?.isAdmin ?? false
+  const isAdmin     = (user?.isAdmin || user?.isSuperAdmin) ?? false
   const isConnected = connected || isDemoMode
 
   useEffect(() => {
