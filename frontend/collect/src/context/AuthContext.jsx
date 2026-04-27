@@ -47,26 +47,37 @@ export function AuthProvider({ children }) {
       const decoded  = jwtDecode(credentialResponse.credential)
 
       // Register with backend — get back isAdmin + isSuperAdmin flags
-      const res  = await fetch(`${API_URL}/auth/google`, {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ token: credentialResponse.credential })
-      })
-      const data = await res.json()
+      let isAdmin = false, isSuperAdmin = false
+      try {
+        const res  = await fetch(`${API_URL}/auth/google`, {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ token: credentialResponse.credential })
+        })
+        if (res.ok) {
+          const data = await res.json()
+          isAdmin      = data.isAdmin      ?? false
+          isSuperAdmin = data.isSuperAdmin ?? false
+        } else {
+          console.warn('Backend auth failed, continuing with Google-only login', res.status)
+        }
+      } catch (backendErr) {
+        console.warn('Backend unreachable, continuing with Google-only login:', backendErr)
+      }
 
       const newUser = {
         name:         decoded.name,
         email:        decoded.email,
         photo:        decoded.picture,
         token:        credentialResponse.credential,
-        isAdmin:      data.isAdmin      ?? false,
-        isSuperAdmin: data.isSuperAdmin ?? false,
+        isAdmin,
+        isSuperAdmin,
       }
 
       localStorage.setItem(STORAGE_KEY, JSON.stringify(newUser))
       setUser(newUser)
 
-      await refreshUserStats(decoded.email)
+      try { await refreshUserStats(decoded.email) } catch (_) {}
     } catch (err) {
       console.error('Login error:', err)
     }

@@ -41,6 +41,7 @@ class GestureSubmission(BaseModel):
     samples:      List[SensorSample]
     contributor:  Optional[str]   = "anonymous"
     region:       Optional[str]   = None
+    device:       Optional[str]   = "esp32"   # "esp32" | "arduino"
 
 
 class GestureRecord(BaseModel):
@@ -53,6 +54,7 @@ class GestureRecord(BaseModel):
     contributor:  str
     region:       Optional[str]
     capturedAt:   datetime
+    device:       Optional[str]   = "esp32"
 
 
 class GestureResponse(BaseModel):

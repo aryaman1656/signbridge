@@ -4,6 +4,7 @@ import { LanguageProvider, useLanguage } from './context/LanguageContext'
 import LoginPage from './pages/LoginPage'
 import HistoryPage from './pages/HistoryPage'
 import AdminPage from './pages/AdminPage'
+import PredictPage from './pages/PredictPage'
 import SerialConnect from './components/SerialConnect'
 import FlexPanel from './components/FlexPanel'
 import MPUPanel from './components/MPUPanel'
@@ -208,6 +209,7 @@ function CollectPage() {
         <div style={{ display: 'flex', gap: '6px' }}>
           <TabButton label="Dashboard"  active={tab === 'dashboard'} onClick={() => setTab('dashboard')} />
           <TabButton label="My History" active={tab === 'history'}   onClick={() => setTab('history')} />
+          <TabButton label="🔮 Predict" active={tab === 'predict'}   onClick={() => setTab('predict')} />
           {isAdmin && <TabButton label="⚙ Admin" active={tab === 'admin'} onClick={() => setTab('admin')} />}
         </div>
 
@@ -266,7 +268,8 @@ function CollectPage() {
 
       {/* ── Tab content ─────────────────────────────────────────────────────── */}
       {tab === 'history' ? <HistoryPage /> :
-       tab === 'admin'   ? <AdminPage />   : (
+       tab === 'admin'   ? <AdminPage />   :
+       tab === 'predict' ? <PredictPage /> : (
         <main style={{ maxWidth: '1280px', margin: '0 auto', padding: '28px 28px 0' }}>
 
           {submitError && (

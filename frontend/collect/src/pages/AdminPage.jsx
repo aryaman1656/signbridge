@@ -446,6 +446,129 @@ function EquivalentsTab({ email }) {
 
 // ── Main AdminPage ────────────────────────────────────────────
 
+// ── Dataset Download Tab ───────────────────────────────────────
+function DownloadTab({ email }) {
+  const [format,   setFormat]   = useState('json')
+  const [language, setLanguage] = useState('')
+  const [gesture,  setGesture]  = useState('')
+  const [loading,  setLoading]  = useState(false)
+  const [msg,      setMsg]      = useState(null)
+  const [preview,  setPreview]  = useState(null)
+
+  const buildUrl = (fmt) => {
+    const params = new URLSearchParams({ email, format: fmt })
+    if (language.trim()) params.set('language', language.trim().toUpperCase())
+    if (gesture.trim())  params.set('gesture',  gesture.trim().toUpperCase())
+    return `${API_URL}/gestures/export?${params}`
+  }
+
+  const fetchPreview = async () => {
+    setLoading(true); setMsg(null); setPreview(null)
+    try {
+      const res = await fetch(buildUrl('json'))
+      if (!res.ok) { const e = await res.json(); throw new Error(e.detail || 'Failed'); }
+      const data = await res.json()
+      setPreview({ totalRecords: data.totalRecords, exportedAt: data.exportedAt, sample: data.records.slice(0, 2) })
+    } catch (e) { setMsg({ type: 'error', text: e.message }) }
+    finally { setLoading(false) }
+  }
+
+  const download = async () => {
+    setLoading(true); setMsg(null)
+    try {
+      const res = await fetch(buildUrl(format))
+      if (!res.ok) { const e = await res.json(); throw new Error(e.detail || 'Failed'); }
+      const blob = await res.blob()
+      const url  = URL.createObjectURL(blob)
+      const a    = document.createElement('a')
+      const cd   = res.headers.get('Content-Disposition') || ''
+      const name = cd.match(/filename=(.+)/)?.[1] || `signbridge_dataset.${format}`
+      a.href = url; a.download = name; a.click()
+      URL.revokeObjectURL(url)
+      setMsg({ type: 'ok', text: `Downloaded ${name}` })
+    } catch (e) { setMsg({ type: 'error', text: e.message }) }
+    finally { setLoading(false) }
+  }
+
+  const row = { display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap', marginBottom: '16px' }
+  const label = { fontFamily: 'var(--font-mono)', fontSize: '0.78rem', color: 'var(--text-muted)', letterSpacing: '0.08em', minWidth: '90px' }
+  const sel = {
+    background: 'rgba(255,255,255,0.06)', border: '1px solid var(--glass-border)',
+    color: 'var(--text-primary)', fontFamily: 'var(--font-body)', fontSize: '0.95rem',
+    padding: '9px 14px', borderRadius: '10px', outline: 'none', cursor: 'pointer',
+  }
+
+  return (
+    <div style={{ maxWidth: '640px' }}>
+      <SectionTitle icon="⬇" title="Export Dataset" />
+      <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '24px', lineHeight: 1.6 }}>
+        Download the full gesture dataset including raw sensor samples for ML training.
+        JSON exports one record per gesture. CSV exports one row per sensor sample (flat, ready for pandas).
+      </p>
+
+      {/* Filters */}
+      <div className="glass" style={{ padding: '20px 24px', marginBottom: '20px', display: 'flex', flexDirection: 'column', gap: '0' }}>
+        <div style={row}>
+          <span style={label}>Format</span>
+          <select value={format} onChange={e => setFormat(e.target.value)} style={sel}>
+            <option value="json">JSON — nested (records + samples)</option>
+            <option value="csv">CSV — flat (one row per sample)</option>
+          </select>
+        </div>
+        <div style={row}>
+          <span style={label}>Language</span>
+          <GlassInput value={language} onChange={e => setLanguage(e.target.value)} placeholder="ASL, ISL, BSL… (blank = all)" style={{ flex: 1 }} />
+        </div>
+        <div style={row}>
+          <span style={label}>Gesture</span>
+          <GlassInput value={gesture} onChange={e => setGesture(e.target.value)} placeholder="HELLO, A, B… (blank = all)" style={{ flex: 1 }} />
+        </div>
+      </div>
+
+      {msg && <Msg msg={msg} />}
+
+      {/* Actions */}
+      <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '24px' }}>
+        <button onClick={fetchPreview} disabled={loading} style={{
+          background: 'rgba(34,211,238,0.08)', border: '1px solid var(--neon-cyan)',
+          color: 'var(--neon-cyan)', fontFamily: 'var(--font-display)', fontSize: '0.85rem',
+          fontWeight: 600, letterSpacing: '0.08em', padding: '10px 22px',
+          borderRadius: '10px', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.5 : 1,
+        }}>
+          {loading ? '…' : 'Preview'}
+        </button>
+        <button onClick={download} disabled={loading} style={{
+          background: 'linear-gradient(135deg, rgba(52,211,153,0.15), rgba(34,211,238,0.15))',
+          border: '1px solid var(--neon-green)', color: 'var(--neon-green)',
+          fontFamily: 'var(--font-display)', fontSize: '0.85rem',
+          fontWeight: 600, letterSpacing: '0.08em', padding: '10px 22px',
+          borderRadius: '10px', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.5 : 1,
+        }}>
+          {loading ? 'Downloading…' : `⬇ Download ${format.toUpperCase()}`}
+        </button>
+      </div>
+
+      {/* Preview panel */}
+      {preview && (
+        <div className="glass" style={{ padding: '20px 24px' }}>
+          <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: '12px' }}>
+            {preview.totalRecords} records found · exported at {new Date(preview.exportedAt).toLocaleString()} · showing first {preview.sample.length}
+          </div>
+          <pre style={{
+            fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: 'var(--text-secondary)',
+            background: 'rgba(0,0,0,0.3)', borderRadius: '8px', padding: '16px',
+            overflowX: 'auto', margin: 0, maxHeight: '320px', overflowY: 'auto',
+          }}>
+            {JSON.stringify(preview.sample.map(r => ({
+              ...r, samples: `[${r.sampleCount} samples — omitted in preview]`
+            })), null, 2)}
+          </pre>
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function AdminPage() {
   const { user } = useAuth()
   const [data,         setData]         = useState(null)
@@ -528,6 +651,7 @@ export default function AdminPage() {
     { id: 'languages',   label: '🌐 Languages' },
     { id: 'words',       label: '📖 Word List' },
     { id: 'equivalents', label: '🔗 Equivalents' },
+    { id: 'download',    label: '⬇ Dataset' },
     ...(isSuperAdmin ? [{ id: 'admins', label: '🛡 Admins' }] : []),
   ]
 
@@ -664,6 +788,7 @@ export default function AdminPage() {
       {activeTab === 'languages'   && <LanguagesTab   email={user?.email} />}
       {activeTab === 'words'       && <WordsTab       email={user?.email} />}
       {activeTab === 'equivalents' && <EquivalentsTab email={user?.email} />}
+      {activeTab === 'download'    && <DownloadTab    email={user?.email} />}
 
       {/* Admins tab — original code preserved */}
       {activeTab === 'admins' && isSuperAdmin && (

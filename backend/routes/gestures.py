@@ -10,12 +10,25 @@ DELETE /gestures/{id}    — delete a gesture (only if owned by requester)
 """
 
 from fastapi import APIRouter, HTTPException, Query
+from fastapi.responses import StreamingResponse
 from datetime import datetime, timezone
 from typing import Optional
+import csv
+import io
+import json
+
 from bson import ObjectId
 
 from models.gesture import GestureSubmission, GestureResponse
 from db.database import get_db
+
+SUPER_ADMIN = "aryamanpandey.cd25@rvce.edu.in"
+
+async def is_admin_email(email: str, db) -> bool:
+    if email == SUPER_ADMIN:
+        return True
+    doc = await db["admins"].find_one({"email": email})
+    return doc is not None
 
 router = APIRouter(prefix="/gestures", tags=["gestures"])
 
@@ -146,3 +159,103 @@ async def delete_gesture(
     await db["gestures"].delete_one({"_id": oid})
 
     return {"success": True, "message": f"Deleted gesture '{doc['gesture']}'"}
+
+
+# ── GET /gestures/export ──────────────────────────────────────
+@router.get("/export")
+async def export_gestures(
+    email:    str           = Query(..., description="Admin email requesting export"),
+    format:   str           = Query("json", description="json or csv"),
+    language: Optional[str] = Query(None,   description="Filter by sign language code"),
+    gesture:  Optional[str] = Query(None,   description="Filter by gesture label"),
+):
+    """
+    Export the full gesture dataset including raw sensor samples.
+    Admin-only. Returns JSON (default) or CSV.
+
+    JSON shape per record:
+      { id, gesture, word, signLanguage, contributor, capturedAt,
+        sampleCount, samples: [{flex:{f1-f5}, mpu:{accelX,Y,Z,gyroX,Y,Z}, timestamp}] }
+
+    CSV shape — one row per *sample* (flat):
+      id, gesture, word, signLanguage, contributor, capturedAt,
+      sample_index, f1, f2, f3, f4, f5,
+      accelX, accelY, accelZ, gyroX, gyroY, gyroZ, timestamp
+    """
+    db = get_db()
+
+    if not await is_admin_email(email, db):
+        raise HTTPException(status_code=403, detail="Admin access required")
+
+    query = {}
+    if language:
+        query["signLanguage"] = language.strip().upper()
+    if gesture:
+        query["gesture"] = gesture.strip().upper()
+
+    cursor = db["gestures"].find(query).sort("capturedAt", 1)
+    records = []
+    async for doc in cursor:
+        rec = {
+            "id":           str(doc["_id"]),
+            "gesture":      doc.get("gesture", ""),
+            "word":         doc.get("word", doc.get("gesture", "")),
+            "signLanguage": doc.get("signLanguage", "ASL"),
+            "contributor":  doc.get("contributor", "anonymous"),
+            "capturedAt":   doc["capturedAt"].isoformat() if doc.get("capturedAt") else None,
+            "sampleCount":  doc.get("sampleCount", 0),
+            "samples":      doc.get("samples", []),
+        }
+        records.append(rec)
+
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+
+    # ── JSON export ──────────────────────────────────────────
+    if format.lower() != "csv":
+        payload = json.dumps({
+            "exportedAt":   datetime.now(timezone.utc).isoformat(),
+            "totalRecords": len(records),
+            "records":      records,
+        }, indent=2)
+        return StreamingResponse(
+            iter([payload]),
+            media_type="application/json",
+            headers={"Content-Disposition": f"attachment; filename=signbridge_dataset_{timestamp}.json"},
+        )
+
+    # ── CSV export — one row per sample ─────────────────────
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow([
+        "id", "gesture", "word", "signLanguage", "contributor", "capturedAt",
+        "sample_index",
+        "f1", "f2", "f3", "f4", "f5",
+        "accelX", "accelY", "accelZ",
+        "gyroX",  "gyroY",  "gyroZ",
+        "sample_timestamp",
+    ])
+    for rec in records:
+        for i, s in enumerate(rec["samples"]):
+            flex = s.get("flex", {})
+            mpu  = s.get("mpu", {})
+            writer.writerow([
+                rec["id"],
+                rec["gesture"],
+                rec["word"],
+                rec["signLanguage"],
+                rec["contributor"],
+                rec["capturedAt"],
+                i,
+                flex.get("f1", ""), flex.get("f2", ""), flex.get("f3", ""),
+                flex.get("f4", ""), flex.get("f5", ""),
+                mpu.get("accelX", ""), mpu.get("accelY", ""), mpu.get("accelZ", ""),
+                mpu.get("gyroX",  ""), mpu.get("gyroY",  ""), mpu.get("gyroZ",  ""),
+                s.get("timestamp", ""),
+            ])
+
+    csv_bytes = output.getvalue().encode("utf-8")
+    return StreamingResponse(
+        iter([csv_bytes]),
+        media_type="text/csv",
+        headers={"Content-Disposition": f"attachment; filename=signbridge_dataset_{timestamp}.csv"},
+    )

@@ -12,12 +12,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
 from db.database import connect_db, close_db
-from routes.gestures   import router as gestures_router
-from routes.stats      import router as stats_router
-from routes.auth       import router as auth_router
-from routes.languages  import router as languages_router
-from routes.words      import router as words_router
+from routes.gestures    import router as gestures_router
+from routes.stats       import router as stats_router
+from routes.auth        import router as auth_router
+from routes.languages   import router as languages_router
+from routes.words       import router as words_router
 from routes.equivalents import router as equivalents_router
+from routes.predict     import router as predict_router
+from routes.predict     import router as predict_router
 
 load_dotenv()
 
@@ -52,6 +54,8 @@ app.include_router(stats_router)
 app.include_router(languages_router)
 app.include_router(words_router)
 app.include_router(equivalents_router)
+app.include_router(predict_router)
+app.include_router(predict_router)
 
 @app.get("/", tags=["health"])
 async def root():
