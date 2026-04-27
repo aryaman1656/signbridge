@@ -19,7 +19,6 @@ from routes.languages   import router as languages_router
 from routes.words       import router as words_router
 from routes.equivalents import router as equivalents_router
 from routes.predict     import router as predict_router
-from routes.predict     import router as predict_router
 
 load_dotenv()
 
@@ -54,7 +53,6 @@ app.include_router(stats_router)
 app.include_router(languages_router)
 app.include_router(words_router)
 app.include_router(equivalents_router)
-app.include_router(predict_router)
 app.include_router(predict_router)
 
 @app.get("/", tags=["health"])

@@ -38,14 +38,19 @@ def _load():
     le_path     = os.path.join(os.path.dirname(ML_DIR), "label_encoder.pkl")
     meta_path   = os.path.join(ML_DIR, "model_meta.json")
 
-    # all four files must exist
     missing = [p for p in [model_path, scaler_path, le_path, meta_path]
                if not os.path.exists(p)]
     if missing:
         return False
 
-    import tensorflow as tf
-    _model  = tf.keras.models.load_model(model_path)
+    try:
+        import tensorflow as tf
+        _model = tf.keras.models.load_model(model_path)
+    except ImportError:
+        return False
+    except Exception:
+        return False
+
     with open(scaler_path, "rb") as f: _scaler = pickle.load(f)
     with open(le_path,     "rb") as f: _le     = pickle.load(f)
     with open(meta_path)         as f: _meta   = json.load(f)
